@@ -1,14 +1,15 @@
 ```{r}
-MergeData =read.csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vQvh-fKdh4RVEFtYigc5Uk4_aTXncPVFyouTKsSO5T1KZMeDDKsj-F6ENYokFBNaYrFv_lEojDyVB-X/pub?gid=950099029&single=true&output=csv", header = TRUE, stringsAsFactors = FALSE)
+link="https://raw.githubusercontent.com/bjcrawley/finalproject543/master/543%20Data%20-%20Final%20Data.csv"
+MergeData = read.csv(file=url(link), header = TRUE, stringsAsFactors = FALSE)
 
-#repeate the code below for every column that you want to be numeric#
-MergeData$Population.2020.= as.numeric(gsub(",","",MergeData$Population.2020.))
-MergeData$CategoryofDevelopment = as.character(MergeData$CategoryofDevelopment)
-class(MergeData$CategoryofDevelopment)
+#repeat the code below for every column that you want to be numeric#
+MergeData$Population= as.numeric(gsub(",","",MergeData$Population))
+MergeData$Development = as.character(MergeData$Development)
+class(MergeData$Development)
 ```
 
 ```{r}
-head(MergeData$Population.2020.)
+head(MergeData$Population)
 ```
 
 ```{r}
@@ -16,7 +17,7 @@ names(MergeData)
 ```
 
 ```{r}
-summary(MergeData$Population.2020.)
+summary(MergeData$Population)
 ```
 
 ```{r}
@@ -25,11 +26,11 @@ summary(MergeData$Population.2020.)
 #Medium= between 100 million and 50 million
 #Small= between 50 million and 25 million
 #Tiny= less than 25 million
-MergeData$CatofPop=cut(MergeData$Population.2020.,
+MergeData$CatofPop=cut(MergeData$Population,
                           breaks = c(18090,25000000,50000000,100000000,1439000000),
                           labels = c("Tiny","Small","Medium", "Large"))
 
-CatOfPopDev=table(MergeData$CatofPop,MergeData$CategoryofDevelopment)
+CatOfPopDev=table(MergeData$CatofPop,MergeData$Development)
 
 #Marginal Percent Table
 (PopDevCol=prop.table(CatOfPopDev,
@@ -170,7 +171,7 @@ tablePlot
 
 
 ```{r}
-MergeData$Population.2020.=MergeData$Population.2020./1000000
+MergeData$Population.2020.=MergeData$Population/1000000
 ```
 
 
