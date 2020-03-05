@@ -169,7 +169,9 @@ tablePlot
 #### SPATIAL TEST ####
 
 
-
+```{r}
+MergeData$Population.2020.=MergeData$Population.2020./1000000
+```
 
 
 ```{r, eval=TRUE}
@@ -230,15 +232,29 @@ library(tmap)
 ```
 
 ```{r}
-numberOfClasses = 4
+numberOfClasses = 5
 
 colorForScale='YlGnBu' # color scale
 
+```
 
-
+```{r}
+layerContrib$cut=cut_number(layerContrib$Population.2020.,numberOfClasses,
+                            ordered_result=T, #ordered variable
+                            dig.lab=5) #5 digits
 ```
 
 
+
+
+```{r}
+baseLayer=ggplot(data = baseMap) +geom_sf() 
+layer1 = baseLayer + geom_sf(data = layerContrib, aes(fill=cut),color=NA,show.legend = T) +
+                 scale_fill_brewer(palette = colorForScale,
+                                   name = "Population")
+#plots the baselayer with the newly created map ontop of it
+layer1    
+```
 
 
 
