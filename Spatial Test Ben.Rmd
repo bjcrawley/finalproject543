@@ -4,9 +4,25 @@ MergeData = read.csv(file=url(link), header = TRUE, stringsAsFactors = FALSE)
 
 #repeat the code below for every column that you want to be numeric#
 MergeData$Population= as.numeric(gsub(",","",MergeData$Population))
-MergeData$Development = as.character(MergeData$Development)
+MergeData$Development = as.factor(MergeData$Development)
+MergeData$Pop.Density= as.factor(MergeData$Pop.Density)
+MergeData$Density= as.numeric(gsub(",","",MergeData$Density))
+MergeData$Emissions= as.numeric(gsub(",","",MergeData$Emissions))
+MergeData$Continent= as.factor(MergeData$Continent)
 class(MergeData$Development)
 ```
+
+```{r}
+#Arithmetic
+MergeData$Index=apply(MergeData[,c(3,5,12)],
+                       MARGIN = 1, # by row / 2 by column
+                       median)
+```
+
+```{r}
+str(MergeData)
+```
+
 
 ```{r}
 head(MergeData$Population)
@@ -19,6 +35,27 @@ names(MergeData)
 ```{r}
 summary(MergeData$Population)
 ```
+
+```{r}
+summary(MergeData$Density)
+```
+
+```{r}
+MergeData$PopDens=cut(MergeData$Density,
+                      breaks = c(2.0,34.5,83.0,203.0,8358.0),
+                      labels = c("Low", "Medium", "High", "Very High"))
+```
+
+```{r}
+summary(MergeData$Emissions)
+```
+
+```{r}
+MergeData$CatEms=cut(MergeData$Emissions,
+                      breaks = c(0, 0.7, 2.7, 6.4, 38.2),
+                      labels = c("Low", "Medium", "High", "Very High"))
+```
+
 
 ```{r}
 #size categories:
@@ -36,6 +73,7 @@ CatOfPopDev=table(MergeData$CatofPop,MergeData$Development)
 (PopDevCol=prop.table(CatOfPopDev,
                       margin = 2))
 ```
+
 
 ```{r}
 CatofPopDev_DF= as.data.frame(CatOfPopDev)
@@ -220,6 +258,7 @@ layerContrib=merge(wazipMap,MergeData,
 
 ```{r}
 # This will make just a border of the state
+library(rmapshaper)
 baseMap <- ms_dissolve(wazipMap) #dissolve creates a basemap, with just the border 
 ```
 
@@ -254,8 +293,105 @@ layer1 = baseLayer + geom_sf(data = layerContrib, aes(fill=cut),color=NA,show.le
                  scale_fill_brewer(palette = colorForScale,
                                    name = "Population")
 #plots the baselayer with the newly created map ontop of it
+#aes(fill=column or cut you want to)
 layer1    
 ```
+
+```{r}
+base = ggplot(MergeData, aes(x=HDI,y=Emissions)) 
+plot1= base +  geom_point() + geom_smooth(method=lm, linetype="dashed", color="darkred", fill="blue") +theme_minimal()
+plot1
+```
+
+
+
+
+
+###Ben's Individual Work###
+
+
+
+
+
+
+###More Mapping Work###
+
+```{r}
+baseLayer=ggplot(data = baseMap) +geom_sf() 
+layer2 = baseLayer + geom_sf(data = layerContrib, aes(fill=PopDens),color=NA,show.legend = T) +
+                 scale_fill_brewer(palette = colorForScale,
+                                   name = "Population Density")
+#plots the baselayer with the newly created map ontop of it
+#aes(fill=column or cut you want to)
+layer2 
+```
+
+```{r}
+baseLayer=ggplot(data = baseMap) +geom_sf() 
+layer3 = baseLayer + geom_sf(data = layerContrib, aes(fill=CatEms),color=NA,show.legend = T) +
+                 scale_fill_brewer(palette = colorForScale,
+                                   name = "Emissions")
+#plots the baselayer with the newly created map ontop of it
+#aes(fill=column or cut you want to)
+layer3 
+```
+
+```{r}
+baseLayer=ggplot(data = baseMap) +geom_sf() 
+layer4 = baseLayer + geom_sf(data = layerContrib, aes(fill=Development),color=NA,show.legend = T) +
+                 scale_fill_brewer(palette = colorForScale,
+                                   name = "Development")
+#plots the baselayer with the newly created map ontop of it
+#aes(fill=column or cut you want to)
+layer4 
+```
+
+```{r}
+library(ggpubr)
+
+ggarrange(layer3, layer4,ncol = 1) # to plot multiple plots 
+```
+
+
+
+### Index ###
+
+```{r}
+numberOfClasses = 4
+
+colorForScale='YlGnBu' # color scale
+
+```
+
+```{r}
+layerContrib$cut2=cut_number(layerContrib$Index,numberOfClasses,
+                            ordered_result=T, #ordered variable
+                            dig.lab=5) #5 digits
+```
+
+```{r}
+baseLayer=ggplot(data = baseMap) +geom_sf() 
+layer5 = baseLayer + geom_sf(data = layerContrib, aes(fill=cut2),color=NA,show.legend = T) +
+                 scale_fill_brewer(palette = colorForScale,
+                                   name = "Index")
+#plots the baselayer with the newly created map ontop of it
+#aes(fill=column or cut you want to)
+layer5 
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
