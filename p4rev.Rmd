@@ -238,12 +238,28 @@ layerContrib$IndexCUT=cut_number(layerContrib$Index,numberOfClasses,
 ```
 
 ```{r}
+
+
 baseLayer=ggplot(data = baseMap) +geom_sf() 
 layer5 = baseLayer + geom_sf(data = layerContrib, aes(fill=IndexCUT),color=NA,show.legend = T) +
                  scale_fill_brewer(palette = colorForScale,
-                                   name = "Index")
+                                   name = "Index", labels = c("Low", "Medium", "High", "Very High", ""))
+
+barTitle = "Where are Countries With High Emissions, Development, and Population?"
+barSubtitle = "An Index of Emissions, Development, and Population"
+barCaption = "Source: United Nations, Human Development Index; World Bank; Worldometer2020"
+
+
+layer5 = layer5 + theme_minimal() + labs(title = barTitle, 
+                           subtitle = barSubtitle,
+                           caption = barCaption) +
+  theme(plot.caption = element_text(hjust = 0), 
+        plot.title = element_text(hjust = 0))
+layer5 = layer5 
 #plots the baselayer with the newly created map ontop of it
 #aes(fill=column or cut you want to)
 layer5 
+
+ggsave('mapindex.jpeg', plot = layer5)
 ```
 
