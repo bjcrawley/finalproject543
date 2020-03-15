@@ -28,6 +28,7 @@ library(rmapshaper)
 library(lwgeom)
 library(geojsonio)
 library(ggpubr)
+library(ggrepel)
 ```
 
 #Background
@@ -176,21 +177,6 @@ names(CatofUrbPopDF)=c("UrbanPop", "Continent", "Frequency")
 CatofUrbPopDF$UrbanPop = ordered(CatofUrbPopDF$UrbanPop, levels=GoodOrder)
 ```
 
-```{r, echo= FALSE, eval=TRUE, warning=FALSE,error=FALSE}
-#Setting up the Bivariate plot showing Development and Urban Population
-CatofUrbPopD=table(MergeData$CatofUrbPop, MergeData$Continent)
-CatUPD=table(MergeData$CatofUrbPop,MergeData$Development)
-UPDCol=prop.table(CatUPD, margin = 2)
-
-UPopCol=prop.table(CatofUrbPopD,
-                    margin = 2)
-CatUPD_DF=as.data.frame((UPDCol))
-names(CatUPD_DF)=c("UrbanPop", "Development", "Frequency")
-CatUPD_DF$UrbanPop = ordered(CatUPD_DF$UrbanPop, levels=GoodOrder)
-CatUPD_DF$Development = ordered(CatUPD_DF$Development, levels=GoodOrder)
-CatUPD_DF$Threshold = ifelse(CatUPD_DF$Frequency>.5, "Above 50%", "Below 50%")
-
-```
 
 ```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
 colorForScale='YlGnBu'
@@ -224,6 +210,84 @@ This plot compares the categories of the percentage of urban population between 
  * Asia has a large divide between rural and highly urbanized countries.
  * Europe is the most highly urbanized continent. 
  * Oceania has the fewest overall countries which is why there is a relative drop compared to the other continents.
+ 
+
+```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
+colorForScale='YlGnBu'
+base=ggplot(data = MergeData,
+            aes( fill = Continent, x=as.factor(Continent),
+                y=Emissions))
+boxBycontinent=base + geom_boxplot()
+
+boxBycontinent= boxBycontinent + theme(axis.text.x = element_text(angle = 45,
+                                                          hjust = 1,
+                                                          size = 10)) +scale_fill_brewer(palette =colorForScale)+ theme_minimal()
+Titles=list(Ti="Which continent has the most CO2 emissions?",
+           Sou="Source: Worldometer2020")
+
+boxBycontinent= boxBycontinent + labs(title =Titles$Ti,caption = Titles$Sou)
+
+
+boxBycontinent= boxBycontinent + theme(plot.title=element_text(hjust=0),
+                   plot.caption=element_text(hjust=0)) + theme(axis.title = element_blank())
+
+
+
+
+boxBycontinent
+```
+
+
+ We label the continent and plot the univariate column: Emissions 
+
+Apparently, Africa is the one which produce the least CO2 emissions. As for rest of them, we could see at Asia and Europe first, these two continent’s top 25 percent countries emit almost the same amount of carbon dioxide. However, when you take a closer look, the Asia’s median is weigh lower than Europe. This result shows that the amount of carbon dioxide emitted by Asian countries varies widely, while the European countries emit the same amount of carbon dioxide.
+
+For most of Americas countries, they do not emit huge amount of CO2 emission, however, just as Asia, the outliers are many times higher than standard deviation
+
+```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
+base = ggplot(MergeData, aes(x=Population,y=Emissions,color=Continent)) 
+plot1= base +  geom_point() +theme_minimal() + geom_text_repel(aes(label=ifelse(Emissions > 20 | Population > 330000000, Country, "")))
+Titles=list(Ti="Relationship between Population and Emissions ?",
+           Sou="Source: Worldometer2020")
+
+
+plot1= plot1 + labs(title =Titles$Ti,caption = Titles$Sou)
+
+plot1= plot1 + theme(plot.title=element_text(hjust=0),
+                   plot.caption=element_text(hjust=0))+ theme(axis.title = element_blank())
+
+plot1
+```
+
+We want to know the relationship between emissions and population. Therefore, we choose a scatter plot. In order to follow 'keep it simple' approach, so I use theme_minimal() to keep the background clear. After plotting, we found out that there's no obvious correlated between them. Therefore, we decided to do a boxplot. 
+
+Only label the country which emissions and population is above 3rd Qu. 
+
+From this scatter plot, we notice that all of the points gather in the left corner. Also, there are lots of outliers.
+
+In this case, it would be hard to tell whether emissions and population is correlated. Therefore, we would like to know will is be any difference if we choose to use the column category of the population instead of population.
+
+
+```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
+colorForScale='YlGnBu'
+base30=ggplot(fill = CatofPop,data=MergeData[MergeData$Emissions>0.625 & MergeData$Emissions<=2.5,],
+            aes(x=reorder(CatofPop,Emissions),y=Emissions))
+box30=base30 + geom_boxplot() + labs(title="Higher the population higher Emissions?",subtitle = "Emissions v.s Category of Population",caption ="Source: World Bank, Worldometer2020")+ theme_minimal()
+box30=box30+theme(plot.title=element_text(hjust=0),
+                  #plot.sutitle=element_text(hjust=0),
+                  plot.caption=element_text(hjust=0))+ theme(axis.title.x = element_blank())
+box30=box30+theme(axis.text.x = element_text(angle = 45, hjust = 1,
+                                   size = 10)) +scale_fill_brewer(palette =colorForScale)
+
+box30
+```
+
+
+Also we reordered the column to make the graph more precise since the presentation.
+
+Before we saw the result from our plot, we always assume more people, more carbon dioxide emissions, vise versa. However, it might not always be the true.
+
+According to the plot, we can find that high population actually produce less CO2 than low population. How come? The explanation may be for those developed countries such as Europe. They might be good at energy saving. Therefore, they produce the lowest CO2 emissions. On the other hand, developing countries like India, since they have large amount of people, and they don’t know how to save the energy efficient, so they produce CO2 emissions the most. 
 
 
 ```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
@@ -286,6 +350,21 @@ plot2
 
 Here the previous scatterplot is further broken out by continent to see each continent's trends. The relationship established previously holds true across each continent. However, the Asian continent (largely brought up by the Middle East) appears to produce a lot more emissions for higher development scores than other continents.
 
+```{r, echo= FALSE, eval=TRUE, warning=FALSE,error=FALSE}
+#Setting up the Bivariate plot showing Development and Urban Population
+CatofUrbPopD=table(MergeData$CatofUrbPop, MergeData$Continent)
+CatUPD=table(MergeData$CatofUrbPop,MergeData$Development)
+UPDCol=prop.table(CatUPD, margin = 2)
+
+UPopCol=prop.table(CatofUrbPopD,
+                    margin = 2)
+CatUPD_DF=as.data.frame((UPDCol))
+names(CatUPD_DF)=c("UrbanPop", "Development", "Frequency")
+CatUPD_DF$UrbanPop = ordered(CatUPD_DF$UrbanPop, levels=GoodOrder)
+CatUPD_DF$Development = ordered(CatUPD_DF$Development, levels=GoodOrder)
+CatUPD_DF$Threshold = ifelse(CatUPD_DF$Frequency>.5, "Above 50%", "Below 50%")
+
+```
 
 ```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
 base = ggplot(data = CatUPD_DF, aes(x=UrbanPop, y=Development,color=Threshold))
@@ -387,60 +466,6 @@ numberOfClasses = 5
 colorForScale='YlGnBu' # color scale
 ```
 
-```{r, echo=FALSE, eval=FALSE, warning=FALSE,error=FALSE}
-#layerContrib$POP20cut=cut_number(layerContrib$Population.2020.,numberOfClasses,
-#                            ordered_result=T, #ordered variable
-#                            dig.lab=5) #5 digits
-```
-
-```{r, echo=FALSE, eval=FALSE, warning=FALSE,error=FALSE}
-#baseLayer=ggplot(data = baseMap) +geom_sf() 
-#layer1 = baseLayer + geom_sf(data = layerContrib, aes(fill=POP20cut),color=NA,show.legend = T) +
-#                 scale_fill_brewer(palette = colorForScale,
-#                                   name = "Population")
-#plots the baselayer with the newly created map ontop of it
-#aes(fill=column or cut you want to)
-   
-```
-
-```{r, echo=FALSE, eval=FALSE, warning=FALSE,error=FALSE}
-#base = ggplot(MergeData, aes(x=HDI,y=Emissions)) 
-#plot1= base +  geom_point() + geom_smooth(method=lm, linetype="dashed", color="darkred", fill="blue") +theme_minimal()
-
-```
-
-```{r, echo=FALSE, eval=FALSE, warning=FALSE,error=FALSE}
-#baseLayer=ggplot(data = baseMap) +geom_sf() 
-#layer2 = baseLayer + geom_sf(data = layerContrib, aes(fill=DensityCUT),color=NA,show.legend = T) +
-#                 scale_fill_brewer(palette = colorForScale,
-#                                   name = "Population Density")
-#plots the baselayer with the newly created map ontop of it
-#aes(fill=column or cut you want to)
-
-```
-
-```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
-#baseLayer=ggplot(data = baseMap) +geom_sf() 
-#layer3 = baseLayer + geom_sf(data = layerContrib, #aes(fill=EmissionsCUT),color=NA,show.legend = T) +                 scale_fill_brewer(palette = colorForScale,
-#                                   name = "Emissions")
-#plots the baselayer with the newly created map ontop of it
-#aes(fill=column or cut you want to)
-
-```
-
-```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
-#baseLayer=ggplot(data = baseMap) +geom_sf() 
-#layer4 = baseLayer + geom_sf(data = layerContrib, #aes(fill=Development),color=NA,show.legend = T) +
-#                 scale_fill_brewer(palette = colorForScale,
-#                                   name = "Development")
-#plots the baselayer with the newly created map ontop of it
-#aes(fill=column or cut you want to)
-
-```
-
-```{r, echo=FALSE, eval=FALSE, warning=FALSE,error=FALSE}
-#ggarrange(layer3, layer4,ncol = 1) # to plot multiple plots 
-```
 
 ```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
 numberOfClasses = 4
