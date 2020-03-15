@@ -26,6 +26,21 @@ library(ggrepel)
 ```
 
 
+## Data Sources
+#### <u>World Bank (2018)</u>
+ 
+ - Metric tons of CO2 emissions per Capita, electricity consumption, and Gross Domestic Product per Capita
+
+#### <u>Human Development Index (HDI)</u>
+
+ - United Nations
+ - Life Expectancy, Years of Schooling, and Gross National Income per Capita
+
+#### <u>Population</u>
+ - WorldOMeter
+ - Population, Migration, Urban Population, Population Density, Land Area
+
+
 ```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
 link="https://raw.githubusercontent.com/bjcrawley/finalproject543/master/543%20Data%20-%20Final%20Data.csv"
 MergeData = read.csv(file=url(link), header = TRUE, stringsAsFactors = FALSE)
@@ -137,16 +152,16 @@ CatofUrbPopC=table(MergeData$CatofUrbPop, MergeData$Continent)
 CatofUrbPopDF=as.data.frame(CatofUrbPopC)
 names(CatofUrbPopDF)=c("UrbanPop", "Continent", "Frequency")
 CatofUrbPopDF$UrbanPop = ordered(CatofUrbPopDF$UrbanPop, levels=GoodOrder)
+```
 
-
-
+```{r, echo= FALSE, eval=TRUE, warning=FALSE,error=FALSE}
 #Setting up the Bivariate plot showing Development and Urban Population
 CatofUrbPopD=table(MergeData$CatofUrbPop, MergeData$Continent)
 CatUPD=table(MergeData$CatofUrbPop,MergeData$Development)
 UPDCol=prop.table(CatUPD, margin = 2)
 
-(UPopCol=prop.table(CatofUrbPopD,
-                    margin = 2))
+UPopCol=prop.table(CatofUrbPopD,
+                    margin = 2)
 CatUPD_DF=as.data.frame((UPDCol))
 names(CatUPD_DF)=c("UrbanPop", "Development", "Frequency")
 CatUPD_DF$UrbanPop = ordered(CatUPD_DF$UrbanPop, levels=GoodOrder)
@@ -179,6 +194,14 @@ BarBase4 = BarBase3 + labs(title = barTitle,
 ###
 BarBase4
 ```
+
+This plot compares the categories of the percentage of urban population between continents. We used the percentage of urban population as our variable to understand the urban and rural divide associated with greenhouse gas emissions. To note a few key pieces about this graph:
+*Africa is largely rural. 
+*North and South America has been combined into Americas.
+*Asia has a large divide between rural and highly urbanized countries.
+*Europe is the most highly urbanized continent. 
+*Oceania has the fewest overall countries which is why there is a relative drop compared to the other continents.
+
 
 ```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
 #Scatter of HDI and Emissions
@@ -264,4 +287,7 @@ base7 = base6 + labs(x = "Urban Population")
 base7
 ```
 
+Having a larger proportion of urban population is associated with higher development. In the graph above we highlighted the key intersection between urban population and the HDI development scores with a concentration threshold of 50 percent. 
+
+These intersections follow our expectations with low urbanization and low or medium development being above 50 percent. Additionally, high urbanization and high development being above 50 percent. We expected that the concentration of the population would scale with increased Gross National Income and would require the support structure associated with other development factors.
 
