@@ -23,7 +23,29 @@ library(RColorBrewer)
 library(ggplot2)
 library(scales)
 library(ggrepel)
+library(tmap)
+library(rmapshaper)
+library(lwgeom)
+library(geojsonio)
+library(ggpubr)
 ```
+
+#Background
+Our analysis of society and the enviroment takes the factors that drive climate change and analyze how they drive country CO2 emissions. Carbon footprints were analyzed using the following factors or their national equilivants:
+
+ * Income
+ * Geography 
+      * The urban vs rural divide
+ * Socioeconomic Indicators
+      * Age
+      * Education
+      * Household size
+
+
+
+![ ](https://raw.githubusercontent.com/bjcrawley/finalproject543/master/WealthMeta.jpeg)
+![ ](https://raw.githubusercontent.com/bjcrawley/finalproject543/master/Graduation.jpeg)
+]
 
 
 ## Data Sources
@@ -136,9 +158,9 @@ box2
 
 Here we can see the HDI broken out across each continent.This shows a few things about development across the world:
 
-* The Americas and Europe are almost completely above the mean development score;
-* Asia and Oceania are centered almost at the mean;
-* Africa is solidly below the mean, which makes sense as there are many developing nations there.
+ * The Americas and Europe are almost completely above the mean development score;
+ * Asia and Oceania are centered almost at the mean;
+ * Africa is solidly below the mean, which makes sense as there are many developing nations there.
 
 ```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
 #Creating categories from our urban population variable.
@@ -196,11 +218,12 @@ BarBase4
 ```
 
 This plot compares the categories of the percentage of urban population between continents. We used the percentage of urban population as our variable to understand the urban and rural divide associated with greenhouse gas emissions. To note a few key pieces about this graph:
-*Africa is largely rural. 
-*North and South America has been combined into Americas.
-*Asia has a large divide between rural and highly urbanized countries.
-*Europe is the most highly urbanized continent. 
-*Oceania has the fewest overall countries which is why there is a relative drop compared to the other continents.
+
+ * Africa is largely rural. 
+ * North and South America has been combined into Americas.
+ * Asia has a large divide between rural and highly urbanized countries.
+ * Europe is the most highly urbanized continent. 
+ * Oceania has the fewest overall countries which is why there is a relative drop compared to the other continents.
 
 
 ```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
@@ -290,4 +313,181 @@ base7
 Having a larger proportion of urban population is associated with higher development. In the graph above we highlighted the key intersection between urban population and the HDI development scores with a concentration threshold of 50 percent. 
 
 These intersections follow our expectations with low urbanization and low or medium development being above 50 percent. Additionally, high urbanization and high development being above 50 percent. We expected that the concentration of the population would scale with increased Gross National Income and would require the support structure associated with other development factors.
+
+
+```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
+#Arithmetic
+
+MergeData[,c(3,5,12)]=lapply(MergeData[,c(3,5,12)],scale)
+
+MergeData$Index=apply(MergeData[,c(3,5,12)],
+                       MARGIN = 1, # by row / 2 by column
+                       median)
+
+
+MergeData$DensityCUT=cut(MergeData$Density,
+                      breaks = c(2.0,34.5,83.0,203.0,8358.0),
+                      labels = c("Low", "Medium", "High", "Very High"),
+                      ordered_result = T)
+
+MergeData$EmissionsCUT=cut(MergeData$Emissions,
+                      breaks = c(0, 0.7, 2.7, 6.4, 38.2),
+                      labels = c("Low", "Medium", "High", "Very High"),
+                      ordered_result = T)
+```
+
+
+
+```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
+MergeData$Population.2020.=MergeData$Population/1000000
+```
+
+
+```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
+MergeData$Development=factor(MergeData$Development,
+                             levels = c('Low','Medium','High','Very High'),
+                             ordered = T)
+```
+
+
+
+```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
+mapLink="https://raw.githubusercontent.com/bjcrawley/finalproject543/master/Countries_WGS84.json"
+```
+
+```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
+
+PROJmap="+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
+wazipMap=topojson_read(mapLink,crs=PROJmap,stringsAsFactors = FALSE)
+```
+
+```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
+
+wazipMap=st_make_valid(wazipMap) #making valid
+
+```
+
+``{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
+
+#ggplot(data=wazipMap) + geom_sf()
+```
+
+```{r, echo=FALSE, eval=FALSE, warning=FALSE,error=FALSE}
+#names(wazipMap)
+```
+
+```{r, echo=FALSE, eval=FALSE, warning=FALSE,error=FALSE}
+#str(wazipMap$CNTRY_NAME)
+```
+
+```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
+layerContrib=merge(wazipMap,MergeData, 
+                   by.x='CNTRY_NAME', 
+                   by.y='Country',
+                   all.x=F)
+```
+
+```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
+# This will make just a border of the state
+
+baseMap <- ms_dissolve(wazipMap) #dissolve creates a basemap, with just the border 
+```
+
+
+```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
+numberOfClasses = 5
+colorForScale='YlGnBu' # color scale
+```
+
+```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
+layerContrib$POP20cut=cut_number(layerContrib$Population.2020.,numberOfClasses,
+                            ordered_result=T, #ordered variable
+                            dig.lab=5) #5 digits
+```
+
+```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
+baseLayer=ggplot(data = baseMap) +geom_sf() 
+layer1 = baseLayer + geom_sf(data = layerContrib, aes(fill=POP20cut),color=NA,show.legend = T) +
+                 scale_fill_brewer(palette = colorForScale,
+                                   name = "Population")
+#plots the baselayer with the newly created map ontop of it
+#aes(fill=column or cut you want to)
+   
+```
+
+```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
+base = ggplot(MergeData, aes(x=HDI,y=Emissions)) 
+plot1= base +  geom_point() + geom_smooth(method=lm, linetype="dashed", color="darkred", fill="blue") +theme_minimal()
+
+```
+
+```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
+baseLayer=ggplot(data = baseMap) +geom_sf() 
+layer2 = baseLayer + geom_sf(data = layerContrib, aes(fill=DensityCUT),color=NA,show.legend = T) +
+                 scale_fill_brewer(palette = colorForScale,
+                                   name = "Population Density")
+#plots the baselayer with the newly created map ontop of it
+#aes(fill=column or cut you want to)
+
+```
+
+```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
+baseLayer=ggplot(data = baseMap) +geom_sf() 
+layer3 = baseLayer + geom_sf(data = layerContrib, aes(fill=EmissionsCUT),color=NA,show.legend = T) +
+                 scale_fill_brewer(palette = colorForScale,
+                                   name = "Emissions")
+#plots the baselayer with the newly created map ontop of it
+#aes(fill=column or cut you want to)
+
+```
+
+```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
+baseLayer=ggplot(data = baseMap) +geom_sf() 
+layer4 = baseLayer + geom_sf(data = layerContrib, aes(fill=Development),color=NA,show.legend = T) +
+                 scale_fill_brewer(palette = colorForScale,
+                                   name = "Development")
+#plots the baselayer with the newly created map ontop of it
+#aes(fill=column or cut you want to)
+
+```
+
+```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
+ggarrange(layer3, layer4,ncol = 1) # to plot multiple plots 
+```
+
+```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
+numberOfClasses = 4
+colorForScale='YlGnBu' # color scale
+```
+
+```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
+layerContrib$IndexCUT=cut_number(layerContrib$Index,numberOfClasses,
+                            ordered_result=T, #ordered variable
+                            dig.lab=5) #5 digits
+```
+
+```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
+
+
+baseLayer=ggplot(data = baseMap) +geom_sf() 
+layer5 = baseLayer + geom_sf(data = layerContrib, aes(fill=IndexCUT),color=NA,show.legend = T) +
+                 scale_fill_brewer(palette = colorForScale,
+                                   name = "Index", labels = c("Low", "Medium", "High", "Very High", ""))
+
+barTitle = "Where are Countries With High Emissions, Development, and Population?"
+barSubtitle = "An Index of Emissions, Development, and Population"
+barCaption = "Source: United Nations, Human Development Index; World Bank; Worldometer2020"
+
+
+layer5 = layer5 + theme_minimal() + labs(title = barTitle, 
+                           subtitle = barSubtitle,
+                           caption = barCaption) +
+  theme(plot.caption = element_text(hjust = 0), 
+        plot.title = element_text(hjust = 0))
+layer5 = layer5 
+#plots the baselayer with the newly created map ontop of it
+#aes(fill=column or cut you want to)
+layer5 
+
+```
 
