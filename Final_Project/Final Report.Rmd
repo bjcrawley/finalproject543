@@ -23,7 +23,30 @@ library(RColorBrewer)
 library(ggplot2)
 library(scales)
 library(ggrepel)
+library(tmap)
+library(rmapshaper)
+library(lwgeom)
+library(geojsonio)
+library(ggpubr)
+library(ggrepel)
 ```
+
+#Background
+Our analysis of society and the enviroment takes the factors that drive climate change and analyze how they drive country CO2 emissions. Carbon footprints were analyzed using the following factors or their national equilivants:
+
+ * Income
+ * Geography 
+      * The urban vs rural divide
+ * Socioeconomic Indicators
+      * Age
+      * Education
+      * Household size
+
+
+
+![ ](https://raw.githubusercontent.com/bjcrawley/finalproject543/master/images/WealthMeta.jpeg)
+![ ](https://raw.githubusercontent.com/bjcrawley/finalproject543/master/images/Graduation.jpeg)
+]
 
 
 ## Data Sources
@@ -42,7 +65,7 @@ library(ggrepel)
 
 
 ```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
-link="https://raw.githubusercontent.com/bjcrawley/finalproject543/master/543%20Data%20-%20Final%20Data.csv"
+link="https://raw.githubusercontent.com/bjcrawley/finalproject543/master/dataset/543%20Data%20-%20Final%20Data.csv"
 MergeData = read.csv(file=url(link), header = TRUE, stringsAsFactors = FALSE)
 #repeat the code below for every column that you want to be numeric#
 MergeData$Population= as.numeric(gsub(",","",MergeData$Population))
@@ -136,9 +159,9 @@ box2
 
 Here we can see the HDI broken out across each continent.This shows a few things about development across the world:
 
-* The Americas and Europe are almost completely above the mean development score;
-* Asia and Oceania are centered almost at the mean;
-* Africa is solidly below the mean, which makes sense as there are many developing nations there.
+ * The Americas and Europe are almost completely above the mean development score;
+ * Asia and Oceania are centered almost at the mean;
+ * Africa is solidly below the mean, which makes sense as there are many developing nations there.
 
 ```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
 #Creating categories from our urban population variable.
@@ -154,21 +177,6 @@ names(CatofUrbPopDF)=c("UrbanPop", "Continent", "Frequency")
 CatofUrbPopDF$UrbanPop = ordered(CatofUrbPopDF$UrbanPop, levels=GoodOrder)
 ```
 
-```{r, echo= FALSE, eval=TRUE, warning=FALSE,error=FALSE}
-#Setting up the Bivariate plot showing Development and Urban Population
-CatofUrbPopD=table(MergeData$CatofUrbPop, MergeData$Continent)
-CatUPD=table(MergeData$CatofUrbPop,MergeData$Development)
-UPDCol=prop.table(CatUPD, margin = 2)
-
-UPopCol=prop.table(CatofUrbPopD,
-                    margin = 2)
-CatUPD_DF=as.data.frame((UPDCol))
-names(CatUPD_DF)=c("UrbanPop", "Development", "Frequency")
-CatUPD_DF$UrbanPop = ordered(CatUPD_DF$UrbanPop, levels=GoodOrder)
-CatUPD_DF$Development = ordered(CatUPD_DF$Development, levels=GoodOrder)
-CatUPD_DF$Threshold = ifelse(CatUPD_DF$Frequency>.5, "Above 50%", "Below 50%")
-
-```
 
 ```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
 colorForScale='YlGnBu'
@@ -196,11 +204,90 @@ BarBase4
 ```
 
 This plot compares the categories of the percentage of urban population between continents. We used the percentage of urban population as our variable to understand the urban and rural divide associated with greenhouse gas emissions. To note a few key pieces about this graph:
-*Africa is largely rural. 
-*North and South America has been combined into Americas.
-*Asia has a large divide between rural and highly urbanized countries.
-*Europe is the most highly urbanized continent. 
-*Oceania has the fewest overall countries which is why there is a relative drop compared to the other continents.
+
+ * Africa is largely rural. 
+ * North and South America has been combined into Americas.
+ * Asia has a large divide between rural and highly urbanized countries.
+ * Europe is the most highly urbanized continent. 
+ * Oceania has the fewest overall countries which is why there is a relative drop compared to the other continents.
+ 
+
+```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
+colorForScale='YlGnBu'
+base=ggplot(data = MergeData,
+            aes( fill = Continent, x=as.factor(Continent),
+                y=Emissions))
+boxBycontinent=base + geom_boxplot()
+
+boxBycontinent= boxBycontinent + theme(axis.text.x = element_text(angle = 45,
+                                                          hjust = 1,
+                                                          size = 10)) +scale_fill_brewer(palette =colorForScale)+ theme_minimal()
+Titles=list(Ti="Which continent has the most CO2 emissions?",
+           Sou="Source: Worldometer2020")
+
+boxBycontinent= boxBycontinent + labs(title =Titles$Ti,caption = Titles$Sou)
+
+
+boxBycontinent= boxBycontinent + theme(plot.title=element_text(hjust=0),
+                   plot.caption=element_text(hjust=0)) + theme(axis.title = element_blank())
+
+
+
+
+boxBycontinent
+```
+
+
+ We label the continent and plot the univariate column: Emissions 
+
+Apparently, Africa is the one which produce the least CO2 emissions. As for rest of them, we could see at Asia and Europe first, these two continent’s top 25 percent countries emit almost the same amount of carbon dioxide. However, when you take a closer look, the Asia’s median is weigh lower than Europe. This result shows that the amount of carbon dioxide emitted by Asian countries varies widely, while the European countries emit the same amount of carbon dioxide.
+
+For most of Americas countries, they do not emit huge amount of CO2 emission, however, just as Asia, the outliers are many times higher than standard deviation
+
+```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
+base = ggplot(MergeData, aes(x=Population,y=Emissions,color=Continent)) 
+plot1= base +  geom_point() +theme_minimal() + geom_text_repel(aes(label=ifelse(Emissions > 20 | Population > 330000000, Country, "")))
+Titles=list(Ti="Relationship between Population and Emissions ?",
+           Sou="Source: Worldometer2020")
+
+
+plot1= plot1 + labs(title =Titles$Ti,caption = Titles$Sou)
+
+plot1= plot1 + theme(plot.title=element_text(hjust=0),
+                   plot.caption=element_text(hjust=0))+ theme(axis.title = element_blank())
+
+plot1
+```
+
+We want to know the relationship between emissions and population. Therefore, we choose a scatter plot. In order to follow 'keep it simple' approach, so I use theme_minimal() to keep the background clear. After plotting, we found out that there's no obvious correlated between them. Therefore, we decided to do a boxplot. 
+
+Only label the country which emissions and population is above 3rd Qu. 
+
+From this scatter plot, we notice that all of the points gather in the left corner. Also, there are lots of outliers.
+
+In this case, it would be hard to tell whether emissions and population is correlated. Therefore, we would like to know will is be any difference if we choose to use the column category of the population instead of population.
+
+
+```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
+colorForScale='YlGnBu'
+base30=ggplot(fill = CatofPop,data=MergeData[MergeData$Emissions>0.625 & MergeData$Emissions<=2.5,],
+            aes(x=reorder(CatofPop,Emissions),y=Emissions))
+box30=base30 + geom_boxplot() + labs(title="Higher the population higher Emissions?",subtitle = "Emissions v.s Category of Population",caption ="Source: World Bank, Worldometer2020")+ theme_minimal()
+box30=box30+theme(plot.title=element_text(hjust=0),
+                  #plot.sutitle=element_text(hjust=0),
+                  plot.caption=element_text(hjust=0))+ theme(axis.title.x = element_blank())
+box30=box30+theme(axis.text.x = element_text(angle = 45, hjust = 1,
+                                   size = 10)) +scale_fill_brewer(palette =colorForScale)
+
+box30
+```
+
+
+Also we reordered the column to make the graph more precise since the presentation.
+
+Before we saw the result from our plot, we always assume more people, more carbon dioxide emissions, vise versa. However, it might not always be the true.
+
+According to the plot, we can find that high population actually produce less CO2 than low population. How come? The explanation may be for those developed countries such as Europe. They might be good at energy saving. Therefore, they produce the lowest CO2 emissions. On the other hand, developing countries like India, since they have large amount of people, and they don’t know how to save the energy efficient, so they produce CO2 emissions the most. 
 
 
 ```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
@@ -263,6 +350,21 @@ plot2
 
 Here the previous scatterplot is further broken out by continent to see each continent's trends. The relationship established previously holds true across each continent. However, the Asian continent (largely brought up by the Middle East) appears to produce a lot more emissions for higher development scores than other continents.
 
+```{r, echo= FALSE, eval=TRUE, warning=FALSE,error=FALSE}
+#Setting up the Bivariate plot showing Development and Urban Population
+CatofUrbPopD=table(MergeData$CatofUrbPop, MergeData$Continent)
+CatUPD=table(MergeData$CatofUrbPop,MergeData$Development)
+UPDCol=prop.table(CatUPD, margin = 2)
+
+UPopCol=prop.table(CatofUrbPopD,
+                    margin = 2)
+CatUPD_DF=as.data.frame((UPDCol))
+names(CatUPD_DF)=c("UrbanPop", "Development", "Frequency")
+CatUPD_DF$UrbanPop = ordered(CatUPD_DF$UrbanPop, levels=GoodOrder)
+CatUPD_DF$Development = ordered(CatUPD_DF$Development, levels=GoodOrder)
+CatUPD_DF$Threshold = ifelse(CatUPD_DF$Frequency>.5, "Above 50%", "Below 50%")
+
+```
 
 ```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
 base = ggplot(data = CatUPD_DF, aes(x=UrbanPop, y=Development,color=Threshold))
@@ -290,4 +392,114 @@ base7
 Having a larger proportion of urban population is associated with higher development. In the graph above we highlighted the key intersection between urban population and the HDI development scores with a concentration threshold of 50 percent. 
 
 These intersections follow our expectations with low urbanization and low or medium development being above 50 percent. Additionally, high urbanization and high development being above 50 percent. We expected that the concentration of the population would scale with increased Gross National Income and would require the support structure associated with other development factors.
+
+
+```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
+#Arithmetic
+
+MergeData[,c(3,5,12)]=lapply(MergeData[,c(3,5,12)],scale)
+
+MergeData$Index=apply(MergeData[,c(3,5,12)],
+                       MARGIN = 1, # by row / 2 by column
+                       median)
+
+
+MergeData$DensityCUT=cut(MergeData$Density,
+                      breaks = c(2.0,34.5,83.0,203.0,8358.0),
+                      labels = c("Low", "Medium", "High", "Very High"),
+                      ordered_result = T)
+
+MergeData$EmissionsCUT=cut(MergeData$Emissions,
+                      breaks = c(0, 0.7, 2.7, 6.4, 38.2),
+                      labels = c("Low", "Medium", "High", "Very High"),
+                      ordered_result = T)
+```
+
+
+
+```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
+MergeData$Population.2020.=MergeData$Population/1000000
+```
+
+
+```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
+MergeData$Development=factor(MergeData$Development,
+                             levels = c('Low','Medium','High','Very High'),
+                             ordered = T)
+```
+
+
+
+```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
+mapLink="https://raw.githubusercontent.com/bjcrawley/finalproject543/master/Group_Practices/Countries_WGS84.json"
+```
+
+```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
+
+PROJmap="+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
+wazipMap=topojson_read(mapLink,crs=PROJmap,stringsAsFactors = FALSE)
+```
+
+```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
+
+wazipMap=st_make_valid(wazipMap) #making valid
+
+```
+
+
+```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
+layerContrib=merge(wazipMap,MergeData, 
+                   by.x='CNTRY_NAME', 
+                   by.y='Country',
+                   all.x=F)
+```
+
+```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
+# This will make just a border of the state
+
+baseMap <- ms_dissolve(wazipMap) #dissolve creates a basemap, with just the border 
+```
+
+
+```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
+numberOfClasses = 5
+colorForScale='YlGnBu' # color scale
+```
+
+
+```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
+numberOfClasses = 4
+colorForScale='YlGnBu' # color scale
+```
+
+```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
+layerContrib$IndexCUT=cut_number(layerContrib$Index,numberOfClasses,
+                            ordered_result=T, #ordered variable
+                            dig.lab=5) #5 digits
+```
+
+```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
+
+
+baseLayer=ggplot(data = baseMap) +geom_sf() 
+layer5 = baseLayer + geom_sf(data = layerContrib, aes(fill=IndexCUT),color=NA,show.legend = T) +
+                 scale_fill_brewer(palette = colorForScale,
+                                   name = "Index", labels = c("Low", "Medium", "High", "Very High", ""))
+
+barTitle = "Where are Countries With High Emissions, Development, and Population?"
+barSubtitle = "An Index of Emissions, Development, and Population"
+barCaption = "Source: United Nations, Human Development Index; World Bank; Worldometer2020"
+
+
+layer5 = layer5 + theme_minimal() + labs(title = barTitle, 
+                           subtitle = barSubtitle,
+                           caption = barCaption) +
+  theme(plot.caption = element_text(hjust = 0), 
+        plot.title = element_text(hjust = 0))
+layer5 = layer5 
+#plots the baselayer with the newly created map ontop of it
+#aes(fill=column or cut you want to)
+layer5 
+
+```
 
