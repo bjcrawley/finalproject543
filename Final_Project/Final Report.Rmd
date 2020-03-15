@@ -43,8 +43,8 @@ Our analysis of society and the enviroment takes the factors that drive climate 
 
 
 
-![ ](https://raw.githubusercontent.com/bjcrawley/finalproject543/master/WealthMeta.jpeg)
-![ ](https://raw.githubusercontent.com/bjcrawley/finalproject543/master/Graduation.jpeg)
+![ ](https://raw.githubusercontent.com/bjcrawley/finalproject543/master/images/WealthMeta.jpeg)
+![ ](https://raw.githubusercontent.com/bjcrawley/finalproject543/master/images/Graduation.jpeg)
 ]
 
 
@@ -64,7 +64,7 @@ Our analysis of society and the enviroment takes the factors that drive climate 
 
 
 ```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
-link="https://raw.githubusercontent.com/bjcrawley/finalproject543/master/543%20Data%20-%20Final%20Data.csv"
+link="https://raw.githubusercontent.com/bjcrawley/finalproject543/master/dataset/543%20Data%20-%20Final%20Data.csv"
 MergeData = read.csv(file=url(link), header = TRUE, stringsAsFactors = FALSE)
 #repeat the code below for every column that you want to be numeric#
 MergeData$Population= as.numeric(gsub(",","",MergeData$Population))
@@ -352,7 +352,7 @@ MergeData$Development=factor(MergeData$Development,
 
 
 ```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
-mapLink="https://raw.githubusercontent.com/bjcrawley/finalproject543/master/Countries_WGS84.json"
+mapLink="https://raw.githubusercontent.com/bjcrawley/finalproject543/master/Group_Practices/Countries_WGS84.json"
 ```
 
 ```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
