@@ -367,18 +367,6 @@ wazipMap=st_make_valid(wazipMap) #making valid
 
 ```
 
-``{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
-
-#ggplot(data=wazipMap) + geom_sf()
-```
-
-```{r, echo=FALSE, eval=FALSE, warning=FALSE,error=FALSE}
-#names(wazipMap)
-```
-
-```{r, echo=FALSE, eval=FALSE, warning=FALSE,error=FALSE}
-#str(wazipMap$CNTRY_NAME)
-```
 
 ```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
 layerContrib=merge(wazipMap,MergeData, 
@@ -399,60 +387,59 @@ numberOfClasses = 5
 colorForScale='YlGnBu' # color scale
 ```
 
-```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
-layerContrib$POP20cut=cut_number(layerContrib$Population.2020.,numberOfClasses,
-                            ordered_result=T, #ordered variable
-                            dig.lab=5) #5 digits
+```{r, echo=FALSE, eval=FALSE, warning=FALSE,error=FALSE}
+#layerContrib$POP20cut=cut_number(layerContrib$Population.2020.,numberOfClasses,
+#                            ordered_result=T, #ordered variable
+#                            dig.lab=5) #5 digits
 ```
 
-```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
-baseLayer=ggplot(data = baseMap) +geom_sf() 
-layer1 = baseLayer + geom_sf(data = layerContrib, aes(fill=POP20cut),color=NA,show.legend = T) +
-                 scale_fill_brewer(palette = colorForScale,
-                                   name = "Population")
+```{r, echo=FALSE, eval=FALSE, warning=FALSE,error=FALSE}
+#baseLayer=ggplot(data = baseMap) +geom_sf() 
+#layer1 = baseLayer + geom_sf(data = layerContrib, aes(fill=POP20cut),color=NA,show.legend = T) +
+#                 scale_fill_brewer(palette = colorForScale,
+#                                   name = "Population")
 #plots the baselayer with the newly created map ontop of it
 #aes(fill=column or cut you want to)
    
 ```
 
-```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
-base = ggplot(MergeData, aes(x=HDI,y=Emissions)) 
-plot1= base +  geom_point() + geom_smooth(method=lm, linetype="dashed", color="darkred", fill="blue") +theme_minimal()
+```{r, echo=FALSE, eval=FALSE, warning=FALSE,error=FALSE}
+#base = ggplot(MergeData, aes(x=HDI,y=Emissions)) 
+#plot1= base +  geom_point() + geom_smooth(method=lm, linetype="dashed", color="darkred", fill="blue") +theme_minimal()
 
 ```
 
-```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
-baseLayer=ggplot(data = baseMap) +geom_sf() 
-layer2 = baseLayer + geom_sf(data = layerContrib, aes(fill=DensityCUT),color=NA,show.legend = T) +
-                 scale_fill_brewer(palette = colorForScale,
-                                   name = "Population Density")
+```{r, echo=FALSE, eval=FALSE, warning=FALSE,error=FALSE}
+#baseLayer=ggplot(data = baseMap) +geom_sf() 
+#layer2 = baseLayer + geom_sf(data = layerContrib, aes(fill=DensityCUT),color=NA,show.legend = T) +
+#                 scale_fill_brewer(palette = colorForScale,
+#                                   name = "Population Density")
 #plots the baselayer with the newly created map ontop of it
 #aes(fill=column or cut you want to)
 
 ```
 
 ```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
-baseLayer=ggplot(data = baseMap) +geom_sf() 
-layer3 = baseLayer + geom_sf(data = layerContrib, aes(fill=EmissionsCUT),color=NA,show.legend = T) +
-                 scale_fill_brewer(palette = colorForScale,
-                                   name = "Emissions")
+#baseLayer=ggplot(data = baseMap) +geom_sf() 
+#layer3 = baseLayer + geom_sf(data = layerContrib, #aes(fill=EmissionsCUT),color=NA,show.legend = T) +                 scale_fill_brewer(palette = colorForScale,
+#                                   name = "Emissions")
 #plots the baselayer with the newly created map ontop of it
 #aes(fill=column or cut you want to)
 
 ```
 
 ```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
-baseLayer=ggplot(data = baseMap) +geom_sf() 
-layer4 = baseLayer + geom_sf(data = layerContrib, aes(fill=Development),color=NA,show.legend = T) +
-                 scale_fill_brewer(palette = colorForScale,
-                                   name = "Development")
+#baseLayer=ggplot(data = baseMap) +geom_sf() 
+#layer4 = baseLayer + geom_sf(data = layerContrib, #aes(fill=Development),color=NA,show.legend = T) +
+#                 scale_fill_brewer(palette = colorForScale,
+#                                   name = "Development")
 #plots the baselayer with the newly created map ontop of it
 #aes(fill=column or cut you want to)
 
 ```
 
-```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
-ggarrange(layer3, layer4,ncol = 1) # to plot multiple plots 
+```{r, echo=FALSE, eval=FALSE, warning=FALSE,error=FALSE}
+#ggarrange(layer3, layer4,ncol = 1) # to plot multiple plots 
 ```
 
 ```{r, echo=FALSE, eval=TRUE, warning=FALSE,error=FALSE}
