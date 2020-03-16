@@ -503,3 +503,7 @@ layer5
 
 ```
 
+Finally, to summarize our findings we created a new index composed of the HDI, Carbon Emissions per Capita, and Population. Dark blue represents countries with a higher combined development score, carbon emissions output, and population. Conversely, countries in yellow score lower on this combined index.
+
+* To no surprise, countries that score highest on this index are in North America, Europe, and the larger, industrial countries in Latin America and Asia.
+* Lower scored countries are predominately in developing areas of Africa and Asia, where populations are more rural, development is low, and are less industrialized.
